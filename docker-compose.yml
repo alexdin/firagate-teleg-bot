@@ -30,6 +30,7 @@ services:
       FRIGATE_RTSP_PASSWORD: "password"
   golang:
     build: ./go
+    working_dir: $GOPATH/src/github.com/alexdin/firagate-teleg-bot/go
     command: go run main.go
     volumes:
       - ./go:$GOPATH/src/github.com/alexdin/firagate-teleg-bot/go

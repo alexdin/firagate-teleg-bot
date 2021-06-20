@@ -2,4 +2,4 @@ FROM golang:1.15.1
 
 WORKDIR ./.
 
-RUN go get -d -v
+RUN go get .
