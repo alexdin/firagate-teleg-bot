@@ -1,5 +1,5 @@
 FROM golang:1.15.1
 
-WORKDIR ./.
+WORKDIR ./go
 
 RUN go get -d -v
