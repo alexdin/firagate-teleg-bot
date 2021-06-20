@@ -3,4 +3,5 @@ mqtt/mosquitto-conf
 mqtt/mosquitto-data
 media/clips
 media/recordings
+go/.env
 !mqtt/mosquitto-conf/mosquitto.conf
