@@ -1,0 +1,41 @@
+version: "3.3"
+services:
+  mosquitto:
+    container_name: mqtt
+    image: eclipse-mosquitto
+    ports:
+      - 1883:1883
+      - 8883:8883
+    volumes:
+      - ./mqtt/mosquitto-conf/mosquitto.conf:/mosquitto/config/mosquitto.conf
+  frigate:
+    container_name: frigate
+    privileged: true # this may not be necessary for all setups
+    restart: unless-stopped
+    image: blakeblackshear/frigate:stable-amd64
+    devices:
+      - /dev/dri/renderD128 # for intel hwaccel, needs to be updated for your hardware
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ./config/config.yml:/config/config.yml:ro
+      - ./media:/media/frigate
+      - type: tmpfs # Optional: 1GB of memory, reduces SSD/SD Card wear
+        target: /tmp/cache
+    links:
+      - mosquitto
+    ports:
+      - "5000:5000"
+      - "1935:1935" # RTMP feeds
+    environment:
+      FRIGATE_RTSP_PASSWORD: "password"
+  golang:
+    container_name: go
+    image: golang:1.15.1
+    volumes:
+      - go/src/github.com:/usr/local/go/src/github.com
+      - go/src/golang.org:/usr/local/go/src/golang.org
+    working_dir: go
+    command: go run main.go
+    links:
+      - mosquitto
+      - frigate

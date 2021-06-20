@@ -1,0 +1,6 @@
+.idea
+mqtt/mosquitto-conf
+mqtt/mosquitto-data
+media/clips
+media/recordings
+!mqtt/mosquitto-conf/mosquitto.conf

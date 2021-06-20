@@ -1,0 +1,65 @@
+mqtt:
+  # Required: host name
+  host: mosquitto
+  # Optional: port (default: shown below)
+  port: 1883
+  # Optional: topic prefix (default: shown below)
+  # WARNING: must be unique if you are running multiple instances
+  topic_prefix: frigate
+  # Optional: client id (default: shown below)
+  # WARNING: must be unique if you are running multiple instances
+  client_id: frigate
+  # Optional: user
+  user: mqtt_user
+  # Optional: password
+  # NOTE: Environment variables that begin with 'FRIGATE_' may be referenced in {}.
+  #       eg. password: '{FRIGATE_MQTT_PASSWORD}'
+  password: password
+  # Optional: interval in seconds for publishing stats (default: shown below)
+  stats_interval: 60
+cameras:
+  # Name of your camera
+  main_door:
+    ffmpeg:
+      inputs:
+        - path: rtsp://192.168.0.101:554/user=admin&password=your_password&channel=1&stream=0.sdp
+          roles:
+            - detect
+            - rtmp
+    width: 1920
+    height: 1080
+    fps: 5
+    motion:
+      mask:
+        - 1920,0,1920,604,1297,0
+        - 598,1080,0,1080,0,0,337,0
+        - 329,0,1437,0,1541,243,429,379
+    detect:
+      enabled: True
+    snapshots:
+      # Optional: Enable writing jpg snapshot to /media/frigate/clips (default: shown below)
+      # This value can be set via MQTT and will be updated in startup based on retained value
+      enabled: True
+      # Optional: print a timestamp on the snapshots (default: shown below)
+      timestamp: False
+      # Optional: draw bounding box on the snapshots (default: shown below)
+      bounding_box: False
+      # Optional: crop the snapshot (default: shown below)
+      crop: False
+      # Optional: height to resize the snapshot to (default: original size)
+      ## height: 175
+      # Optional: Restrict snapshots to objects that entered any of the listed zones (default: no required zones)
+      required_zones: [ ]
+      # Optional: Camera override for retention settings (default: global values)
+      retain:
+        # Required: Default retention days (default: shown below)
+        default: 10
+        # Optional: Per object retention days
+        objects:
+          person: 15
+detectors:
+  coral:
+    type: cpu
+objects:
+  track:
+    - person
