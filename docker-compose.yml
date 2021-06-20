@@ -29,13 +29,10 @@ services:
     environment:
       FRIGATE_RTSP_PASSWORD: "password"
   golang:
-    container_name: go
-    image: golang:1.15.1
-    volumes:
-      - go/src/github.com:/usr/local/go/src/github.com
-      - go/src/golang.org:/usr/local/go/src/golang.org
-    working_dir: go
+    build: ./go
     command: go run main.go
+    volumes:
+      - ./go:$GOPATH/src/github.com/alexdin/firagate-teleg-bot/go
     links:
       - mosquitto
       - frigate
