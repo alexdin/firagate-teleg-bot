@@ -78,7 +78,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	bot.Debug = true
+	bot.Debug = false
 
 	log.Printf("Authorized on account %s", bot.Self.UserName)
 
@@ -161,7 +161,7 @@ func cameraEventHandler(data []byte, api *tgbotapi.BotAPI) {
 func sendAlarm(bot *tgbotapi.BotAPI, id string) {
 	channelId := os.Getenv("TELEGRAM_CHANNEL_ID")
 	channelIdInt, _ := strconv.ParseInt(channelId, 10, 64)
-	frigateUrl :=os.Getenv("FRIGATE_URL");
+	frigateUrl := os.Getenv("FRIGATE_URL")
 
 	fullPath := frigateUrl + "/api/events/" + id + "/snapshot.jpg"
 
@@ -179,6 +179,6 @@ func sendAlarm(bot *tgbotapi.BotAPI, id string) {
 	photo := tgbotapi.NewPhotoUpload(channelIdInt, bytes)
 	_, err = bot.Send(photo)
 	if err != nil {
-			fmt.Println( err)
+		fmt.Println(err)
 	}
 }
