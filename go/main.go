@@ -13,6 +13,7 @@ import (
 	"os"
 	"strconv"
 	"sync"
+	"time"
 )
 
 type CamEvent struct {
@@ -65,6 +66,15 @@ var connectLostHandler mqtt.ConnectionLostHandler = func(client mqtt.Client, err
 	fmt.Printf("Connect lost: %v", err)
 }
 
+var numericKeyboard = tgbotapi.NewInlineKeyboardMarkup(
+	tgbotapi.NewInlineKeyboardRow(
+		tgbotapi.NewInlineKeyboardButtonData("🔇", "muteCommand"),
+		tgbotapi.NewInlineKeyboardButtonData("🔉", "unMuteCommand"),
+	),
+)
+
+var muteTime int64 = time.Now().Unix()
+
 func main() {
 	err := godotenv.Load()
 	if err != nil {
@@ -94,21 +104,30 @@ func main() {
 		panic(token.Error())
 	}
 
-	sub(mqttClient, bot)
+	go sub(mqttClient, bot)
 
 	for update := range botUpdates {
-		if update.Message == nil { // ignore any non-Message Updates
-			continue
+		if update.CallbackQuery != nil {
+			fmt.Print(update)
+
+			bot.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, update.CallbackQuery.Data))
+			switch update.CallbackQuery.Data {
+			case "muteCommand":
+				mute()
+			case "unMuteCommand":
+				unMute()
+			}
 		}
-
-		log.Println(update)
-
-		//msg := tgbotapi.NewMessage(update.Message.Chat.ID, update.Message.Text)
-		//msg.ReplyToMessageID = update.Message.MessageID
-		//
-		//bot.Send(msg)
+		if update.Message != nil {
+			msg := tgbotapi.NewMessage(update.Message.Chat.ID, update.Message.Text)
+			fmt.Println(msg)
+		}
 	}
 
+}
+
+func unMute() {
+	muteTime = time.Now().Unix() - 1
 }
 
 func getMQTTClient() mqtt.Client {
@@ -159,6 +178,12 @@ func cameraEventHandler(data []byte, api *tgbotapi.BotAPI) {
 }
 
 func sendAlarm(bot *tgbotapi.BotAPI, id string) {
+	if muteTime < time.Now().Unix() {
+		sendPhoto(bot, id)
+	}
+}
+
+func sendPhoto(bot *tgbotapi.BotAPI, id string) {
 	channelId := os.Getenv("TELEGRAM_CHANNEL_ID")
 	channelIdInt, _ := strconv.ParseInt(channelId, 10, 64)
 	frigateUrl := os.Getenv("FRIGATE_URL")
@@ -177,8 +202,13 @@ func sendAlarm(bot *tgbotapi.BotAPI, id string) {
 	}
 	bytes := tgbotapi.FileBytes{Name: "image.jpg", Bytes: content}
 	photo := tgbotapi.NewPhotoUpload(channelIdInt, bytes)
+	photo.ReplyMarkup = numericKeyboard
 	_, err = bot.Send(photo)
 	if err != nil {
 		fmt.Println(err)
 	}
+}
+
+func mute() {
+	muteTime = time.Now().Unix() + 300
 }
