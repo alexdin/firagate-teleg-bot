@@ -10,6 +10,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"strconv"
 	"sync"
@@ -85,7 +86,20 @@ func main() {
 
 	bot, err := tgbotapi.NewBotAPI(botKey)
 	if err != nil {
-		log.Fatal(err)
+		for {
+			bot, err = tgbotapi.NewBotAPI(botKey)
+			if err != nil {
+				switch err.(type) {
+				case *url.Error:
+					log.Println("Internet is dead :( retrying to connect in 2 minutes")
+					time.Sleep(1 * time.Minute)
+				default:
+					log.Fatal(err)
+				}
+			} else {
+				break
+			}
+		}
 	}
 
 	bot.Debug = false
