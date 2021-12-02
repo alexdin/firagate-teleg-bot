@@ -1,7 +1,7 @@
 package main
 
 import (
-	"encoding/json"
+	"./internal/events"
 	"fmt"
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/go-telegram-bot-api/telegram-bot-api"
@@ -16,44 +16,6 @@ import (
 	"sync"
 	"time"
 )
-
-type CamEvent struct {
-	Before struct {
-		ID            string        `json:"id"`
-		Camera        string        `json:"camera"`
-		FrameTime     float64       `json:"frame_time"`
-		Label         string        `json:"label"`
-		TopScore      float64       `json:"top_score"`
-		FalsePositive bool          `json:"false_positive"`
-		StartTime     float64       `json:"start_time"`
-		EndTime       interface{}   `json:"end_time"`
-		Score         float64       `json:"score"`
-		Box           []int         `json:"box"`
-		Area          int           `json:"area"`
-		Region        []int         `json:"region"`
-		CurrentZones  []interface{} `json:"current_zones"`
-		EnteredZones  []interface{} `json:"entered_zones"`
-		Thumbnail     interface{}   `json:"thumbnail"`
-	} `json:"before"`
-	After struct {
-		ID            string        `json:"id"`
-		Camera        string        `json:"camera"`
-		FrameTime     float64       `json:"frame_time"`
-		Label         string        `json:"label"`
-		TopScore      float64       `json:"top_score"`
-		FalsePositive bool          `json:"false_positive"`
-		StartTime     float64       `json:"start_time"`
-		EndTime       interface{}   `json:"end_time"`
-		Score         float64       `json:"score"`
-		Box           []int         `json:"box"`
-		Area          int           `json:"area"`
-		Region        []int         `json:"region"`
-		CurrentZones  []interface{} `json:"current_zones"`
-		EnteredZones  []interface{} `json:"entered_zones"`
-		Thumbnail     interface{}   `json:"thumbnail"`
-	} `json:"after"`
-	Type string `json:"type"`
-}
 
 var messagePubHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
 	fmt.Printf("Received message: %s from topic: %s\n", msg.Payload(), msg.Topic())
@@ -170,25 +132,15 @@ func sub(client mqtt.Client, bot *tgbotapi.BotAPI) {
 
 	if token := client.Subscribe(topic, 0, func(client mqtt.Client, msg mqtt.Message) {
 		//fmt.Printf("Subscribed to topic %s", msg.Payload())
-		cameraEventHandler(msg.Payload(), bot)
+		if eventId, ok := events.EventHandle(msg.Payload()); ok {
+			sendAlarm(bot, eventId)
+		}
+
 	}); token.Wait() && token.Error() != nil {
 		fmt.Println(token.Error())
 	}
 
 	wg.Wait()
-}
-
-func cameraEventHandler(data []byte, api *tgbotapi.BotAPI) {
-	camName := os.Getenv("CAM_NAME")
-	var event CamEvent
-	if err := json.Unmarshal(data, &event); err != nil {
-		panic(err)
-	}
-	if event.After.Camera == camName && event.After.Label == "person" && event.Type == "new" {
-		fmt.Println("\n Detection " + event.After.ID)
-
-		sendAlarm(api, event.After.ID)
-	}
 }
 
 func sendAlarm(bot *tgbotapi.BotAPI, id string) {
