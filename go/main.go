@@ -30,17 +30,13 @@ func main() {
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
-
 	mqttClient := getMQTTClient()
-
 	if token := mqttClient.Connect(); token.Wait() && token.Error() != nil {
 		panic(token.Error())
 	}
-
 	bot := notify.Boot()
-
 	go sub(mqttClient, bot)
-
+	notify.HandleUpdates(bot)
 }
 
 func getMQTTClient() mqtt.Client {
@@ -60,6 +56,7 @@ func getMQTTClient() mqtt.Client {
 }
 
 func sub(client mqtt.Client, bot *tgbotapi.BotAPI) {
+	listener.Boot()
 	var wg sync.WaitGroup
 	wg.Add(1)
 	topic := os.Getenv("MQTT_TOPIC_PREFIX")

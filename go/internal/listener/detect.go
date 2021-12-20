@@ -3,7 +3,10 @@ package listener
 import (
 	"encoding/json"
 	"os"
+	"strings"
 )
+
+var camNames []string
 
 type CamEvent struct {
 	Before struct {
@@ -43,6 +46,10 @@ type CamEvent struct {
 	Type string `json:"type"`
 }
 
+func Boot() {
+	camNames = strings.Split(os.Getenv("CAM_NAMES"), ",")
+}
+
 func EventHandle(data []byte) (string, bool) {
 	var event CamEvent
 	if err := json.Unmarshal(data, &event); err != nil {
@@ -60,6 +67,10 @@ func isPerson(event CamEvent) bool {
 }
 
 func isCamera(event CamEvent) bool {
-	camName := os.Getenv("CAM_NAME")
-	return event.After.Camera == camName
+	for _, name := range camNames {
+		if event.After.Camera == name {
+			return true
+		}
+	}
+	return false
 }

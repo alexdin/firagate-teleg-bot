@@ -44,11 +44,21 @@ func Boot() *tgbotapi.BotAPI {
 
 	bot.Debug = false
 
+	return bot
+}
+
+func SendAlarm(bot *tgbotapi.BotAPI, id string) {
+	if muteTime < time.Now().Unix() {
+		sendPhoto(bot, id)
+	}
+}
+
+func HandleUpdates(bot *tgbotapi.BotAPI) {
 	log.Printf("Authorized on account %s", bot.Self.UserName)
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
 
-	botUpdates, err := bot.GetUpdatesChan(u)
+	botUpdates, _ := bot.GetUpdatesChan(u)
 	// botUpdates from  bot telegram
 
 	for update := range botUpdates {
@@ -68,7 +78,6 @@ func Boot() *tgbotapi.BotAPI {
 			fmt.Println(msg)
 		}
 	}
-	return bot
 }
 
 func unMute() {
@@ -79,19 +88,13 @@ func mute() {
 	muteTime = time.Now().Unix() + 300
 }
 
-func SendAlarm(bot *tgbotapi.BotAPI, id string) {
-	if muteTime < time.Now().Unix() {
-		sendPhoto(bot, id)
-	}
-}
-
 func sendPhoto(bot *tgbotapi.BotAPI, id string) {
 	channelId := os.Getenv("TELEGRAM_CHANNEL_ID")
 	channelIdInt, _ := strconv.ParseInt(channelId, 10, 64)
 	frigateUrl := os.Getenv("FRIGATE_URL")
 
-	fullPath := frigateUrl + "/api/listener/" + id + "/snapshot.jpg"
-
+	fullPath := frigateUrl + "/api/events/" + id + "/snapshot.jpg"
+	fmt.Println(fullPath)
 	res, err := http.Get(fullPath)
 
 	if err != nil {
