@@ -2,12 +2,12 @@ package main
 
 import (
 	"fmt"
-	"github.com/alexdin/firagate-teleg-bot/go/internal/listener"
-	"github.com/alexdin/firagate-teleg-bot/go/internal/notify"
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/go-telegram-bot-api/telegram-bot-api"
 	"github.com/joho/godotenv"
 	_ "image/jpeg"
+	"internal/listener"
+	"internal/notify"
 	"log"
 	"os"
 	"sync"
