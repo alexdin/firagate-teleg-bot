@@ -33,7 +33,7 @@ services:
     working_dir: $GOPATH/src/github.com/alexdin/firagate-teleg-bot/watcher
     command: go run main.go
     volumes:
-      - ./go:$GOPATH/src/github.com/alexdin/firagate-teleg-bot/watcher
+      - ./watcher:$GOPATH/src/github.com/alexdin/firagate-teleg-bot/watcher
     links:
       - mosquitto
       - frigate
