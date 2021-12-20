@@ -7,7 +7,7 @@ import (
 	"github.com/joho/godotenv"
 	_ "image/jpeg"
 	"internal/listener"
-	"internal/notify"
+	"internal/notifyer"
 	"log"
 	"os"
 	"sync"
@@ -34,9 +34,9 @@ func main() {
 	if token := mqttClient.Connect(); token.Wait() && token.Error() != nil {
 		panic(token.Error())
 	}
-	bot := notify.Boot()
+	bot := notifyer.Boot()
 	go sub(mqttClient, bot)
-	notify.HandleUpdates(bot)
+	notifyer.HandleUpdates(bot)
 }
 
 func getMQTTClient() mqtt.Client {
@@ -67,7 +67,7 @@ func sub(client mqtt.Client, bot *tgbotapi.BotAPI) {
 	if token := client.Subscribe(topic, 0, func(client mqtt.Client, msg mqtt.Message) {
 		//fmt.Printf("Subscribed to topic %s", msg.Payload())
 		if eventId, ok := listener.EventHandle(msg.Payload()); ok {
-			notify.SendAlarm(bot, eventId)
+			notifyer.SendAlarm(bot, eventId)
 		}
 
 	}); token.Wait() && token.Error() != nil {

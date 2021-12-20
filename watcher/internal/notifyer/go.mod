@@ -1,4 +1,4 @@
-module github.com/alexdin/firagate-teleg-bot/go/internal/notify
+module notifyer
 
 go 1.15
 

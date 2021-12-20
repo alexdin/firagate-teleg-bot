@@ -3,5 +3,5 @@ mqtt/mosquitto-conf
 mqtt/mosquitto-data
 media/clips
 media/recordings
-go/.env
+watcher/.env
 !mqtt/mosquitto-conf/mosquitto.conf
